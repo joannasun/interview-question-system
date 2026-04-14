@@ -7,4 +7,6 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: FRONTEND_URL
+        value: https://joannasun.github.io
     plan: free
