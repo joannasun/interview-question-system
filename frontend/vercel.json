@@ -11,7 +11,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "https://interview-backend.onrender.com/api/$1"
+      "dest": "https://interview-question-system.onrender.com/api/$1"
     },
     {
       "src": "/(.*)",
