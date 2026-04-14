@@ -4,6 +4,9 @@
 
 Demo：
 前端静态页面链接：https://joannasun.github.io/
+<img width="1322" height="824" alt="image" src="https://github.com/user-attachments/assets/46adfcc5-cd12-470a-999b-9e3f45a9b02a" />
+
+
 https://github.com/user-attachments/assets/8433d44c-515d-4353-aa56-729b3fe0768a
 
 ## 技术栈
