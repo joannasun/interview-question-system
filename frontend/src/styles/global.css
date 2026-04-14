@@ -1,0 +1,322 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #409EFF, #66b1ff);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #66b1ff, #409EFF);
+}
+
+/* 全局动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 加载动画 */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* 移动端全局优化 */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .el-card {
+    border-radius: 12px;
+  }
+
+  .el-card__header {
+    padding: 15px;
+  }
+
+  .el-card__body {
+    padding: 15px;
+  }
+
+  .el-message-box {
+    width: 90% !important;
+    max-width: 400px;
+  }
+
+  .el-dialog {
+    width: 90% !important;
+    max-width: 400px;
+    margin-top: 5vh !important;
+  }
+
+  .el-form-item__label {
+    font-size: 14px;
+    padding-bottom: 8px;
+  }
+
+  .el-input__inner {
+    font-size: 16px;
+  }
+
+  .el-textarea__inner {
+    font-size: 16px;
+  }
+
+  .el-button {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  .el-checkbox__label {
+    font-size: 14px;
+  }
+
+  .el-radio__label {
+    font-size: 14px;
+  }
+
+  .el-message {
+    min-width: 280px;
+  }
+
+  .el-notification {
+    width: 280px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+
+  .el-card__header {
+    padding: 12px;
+  }
+
+  .el-card__body {
+    padding: 12px;
+  }
+
+  .el-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .el-checkbox__label {
+    font-size: 13px;
+  }
+
+  .el-radio__label {
+    font-size: 13px;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .el-button:active {
+    transform: scale(0.98);
+  }
+
+  .el-card:active {
+    transform: scale(0.99);
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 安全区域适配 (iPhone X 等) */
+@supports (padding: env(safe-area-inset-top)) {
+  .header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .footer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* 文字选中样式 */
+::selection {
+  background: rgba(64, 158, 255, 0.3);
+  color: #303133;
+}
+
+/* 链接样式 */
+a {
+  color: #409EFF;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #66b1ff;
+}
+
+/* 图片懒加载占位 */
+img[lazy="loading"] {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+img[lazy="loaded"] {
+  opacity: 1;
+}
+
+/* 禁用状态优化 */
+.el-button.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 输入框聚焦动画 */
+.el-input__inner:focus,
+.el-textarea__inner:focus {
+  animation: inputFocus 0.3s ease;
+}
+
+@keyframes inputFocus {
+  0% {
+    box-shadow: 0 0 0 0 rgba(64, 158, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  }
+}
+
+/* 卡片悬停效果 */
+.el-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.el-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 按钮点击波纹效果 */
+.el-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.el-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.el-button:active::after {
+  width: 200px;
+  height: 200px;
+}
+
+/* 骨架屏动画 */
+.skeleton {
+  background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
