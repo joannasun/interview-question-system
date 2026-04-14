@@ -2,6 +2,10 @@
 
 一个针对前端技术和AI Agent的面试问答系统，支持查看模式和问答模式，可根据用户需求自定义题目方向和难度级别。
 
+Demo：
+前端静态页面链接：https://joannasun.github.io/
+https://github.com/user-attachments/assets/8433d44c-515d-4353-aa56-729b3fe0768a
+
 ## 技术栈
 
 - **前端**：Vue 3 + TypeScript + Element Plus + Vite
@@ -12,7 +16,7 @@
 1. **题目分类**：
    - 前端技术：HTML、CSS、JavaScript、TypeScript、Vue、React
    - AI Agent：LLM、ReAct、MCP、Skills、LangChain、RAG、Memory、Context
-   - 自定义：上传图片或TXT文档
+   - 自定义：上传pdf格式简历， AI根据简历内容生成面试题
 
 2. **难度级别**：
    - 初级
