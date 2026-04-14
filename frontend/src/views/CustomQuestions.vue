@@ -288,7 +288,7 @@ const pageSize = ref(10)
 const {
   isRecording: isAnswerRecording,
   isUploading: isAnswerUploading,
-  error: answerRecordError,
+  // error: answerRecordError,
   toggleRecording: toggleAnswerRecording
 } = useAudioRecorder()
 
@@ -300,7 +300,7 @@ const paginatedQuestions = computed(() => {
   return questions.value.slice(start, end)
 })
 
-const handleFileChange = (file: any, fileList_: any) => {
+const handleFileChange = (file: any) => {
   if (file.raw) {
     fileList.value = [file]
     uploadedResume.value = true
