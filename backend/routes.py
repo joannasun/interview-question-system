@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
@@ -385,30 +385,6 @@ class TranscriptionResponse(BaseModel):
     success: bool
     error: Optional[str] = None
 
-_whisper_model = None
-
-def get_whisper_model():
-    global _whisper_model
-    if _whisper_model is None:
-        import imageio_ffmpeg
-        import os
-        import shutil
-        
-        ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
-        ffmpeg_dir = os.path.dirname(ffmpeg_path)
-        ffmpeg_exe = os.path.join(ffmpeg_dir, "ffmpeg.exe")
-        
-        if not os.path.exists(ffmpeg_exe):
-            shutil.copy(ffmpeg_path, ffmpeg_exe)
-        
-        current_path = os.environ.get("PATH", "")
-        if ffmpeg_dir not in current_path:
-            os.environ["PATH"] = ffmpeg_dir + os.pathsep + current_path
-        
-        import whisper
-        _whisper_model = whisper.load_model("base")
-    return _whisper_model
-
 @router.post("/api/speech/transcribe", response_model=TranscriptionResponse)
 async def transcribe_audio(audio: UploadFile = File(...)):
     try:
@@ -423,65 +399,187 @@ async def transcribe_audio(audio: UploadFile = File(...)):
                 error="音频文件为空"
             )
         
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
-            temp_file.write(audio_content)
-            temp_file_path = temp_file.name
+        api_key = os.environ.get("QIANWEN_API_KEY", "")
         
-        wav_path = temp_file_path.replace(".webm", ".wav")
-        
-        try:
-            import subprocess
-            import imageio_ffmpeg
-            ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-            
-            print(f"使用 ffmpeg: {ffmpeg_exe}")
-            print(f"转换音频: {temp_file_path} -> {wav_path}")
-            
-            result = subprocess.run(
-                [ffmpeg_exe, "-y", "-i", temp_file_path, "-ar", "16000", "-ac", "1", wav_path],
-                capture_output=True,
-                text=True
-            )
-            
-            print(f"ffmpeg stdout: {result.stdout}")
-            print(f"ffmpeg stderr: {result.stderr}")
-            
-            if result.returncode != 0:
-                return TranscriptionResponse(
-                    text="",
-                    success=False,
-                    error=f"音频转换失败: {result.stderr}"
-                )
-            
-            wav_size = os.path.getsize(wav_path)
-            print(f"wav 文件大小: {wav_size} bytes")
-            
-            model = get_whisper_model()
-            print("开始 Whisper 识别...")
-            transcribe_result = model.transcribe(wav_path, language="zh")
-            
-            text = transcribe_result["text"]
-            
-            import zhconv
-            text = zhconv.convert(text, "zh-cn")
-            
-            print(f"识别结果: {text}")
-            
+        if not api_key:
             return TranscriptionResponse(
-                text=text,
-                success=True
+                text="",
+                success=False,
+                error="未配置 QIANWEN_API_KEY 环境变量"
             )
-        finally:
-            if os.path.exists(temp_file_path):
-                os.unlink(temp_file_path)
-            if os.path.exists(wav_path):
-                os.unlink(wav_path)
+        
+        import base64
+        from openai import OpenAI
+        
+        audio_base64 = base64.b64encode(audio_content).decode('utf-8')
+        
+        print(f"开始 Qwen3-ASR-Flash 识别, 文件大小: {len(audio_content)} bytes")
+        
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+        )
+        
+        completion = client.chat.completions.create(
+            model="qwen3-asr-flash",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_audio",
+                            "input_audio": {
+                                "data": f"data:audio/wav;base64,{audio_base64}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            extra_body={
+                "asr_options": {
+                    "enable_itn": False,
+                    "language": "zh"
+                }
+            }
+        )
+        
+        text = completion.choices[0].message.content
+        print(f"识别结果: {text}")
+        
+        return TranscriptionResponse(
+            text=text or "",
+            success=True
+        )
                 
     except Exception as e:
         import traceback
         traceback.print_exc()
         return TranscriptionResponse(
             text="",
+            success=False,
+            error=str(e)
+        )
+
+
+class ResumeUploadResponse(BaseModel):
+    success: bool
+    resume_id: Optional[str] = None
+    error: Optional[str] = None
+
+class ResumeQuestionsResponse(BaseModel):
+    questions: List[Question]
+    success: bool
+    error: Optional[str] = None
+
+@router.post("/api/resume/upload", response_model=ResumeUploadResponse)
+async def upload_resume(file: UploadFile = File(...)):
+    try:
+        if not file.filename or not file.filename.lower().endswith('.pdf'):
+            return ResumeUploadResponse(
+                success=False,
+                error="请上传 PDF 格式的简历文件"
+            )
+        
+        content = await file.read()
+        if len(content) > 10 * 1024 * 1024:
+            return ResumeUploadResponse(
+                success=False,
+                error="文件大小不能超过 10MB"
+            )
+        
+        import uuid
+        resume_id = str(uuid.uuid4())
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+        
+        resume_storage[resume_id] = temp_file_path
+        
+        return ResumeUploadResponse(
+            success=True,
+            resume_id=resume_id
+        )
+        
+    except Exception as e:
+        return ResumeUploadResponse(
+            success=False,
+            error=str(e)
+        )
+
+resume_storage: dict = {}
+
+@router.post("/api/resume/generate-questions", response_model=ResumeQuestionsResponse)
+async def generate_resume_questions(
+    file: UploadFile = File(...),
+    count: str = Form("10"),
+    levels: str = Form('["初级", "中级", "高级"]')
+):
+    try:
+        import json
+        from pypdf import PdfReader
+        
+        content = await file.read()
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+        
+        try:
+            reader = PdfReader(temp_file_path)
+            resume_text = ""
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    resume_text += text + "\n"
+            
+            if not resume_text.strip():
+                return ResumeQuestionsResponse(
+                    questions=[],
+                    success=False,
+                    error="无法从简历中提取文本内容"
+                )
+            
+            question_count = int(count)
+            level_list = json.loads(levels)
+            
+            prompt = f"""根据以下简历内容，生成{question_count}道面试题。
+
+简历内容：
+{resume_text[:3000]}
+
+要求：
+1. 难度级别：{', '.join(level_list)}
+2. 问题要针对简历中的技术栈、项目经验、工作经历进行提问
+3. 问题要有深度，能够考察候选人的真实能力
+4. 每个问题都要有详细的参考答案
+
+返回JSON数组格式，每个元素包含：
+- id: 序号
+- question: 面试问题
+- answer: 参考答案
+- level: 难度级别（初级/中级/高级）
+- technology: 相关技术领域
+
+只返回JSON数组，不要其他内容。"""
+
+            from llm_service import llm_service
+            questions = llm_service.generate_questions_from_prompt(prompt, question_count)
+            
+            return ResumeQuestionsResponse(
+                questions=questions,
+                success=True
+            )
+            
+        finally:
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return ResumeQuestionsResponse(
+            questions=[],
             success=False,
             error=str(e)
         )

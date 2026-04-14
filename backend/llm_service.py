@@ -120,7 +120,7 @@ class LLMService:
             context_text = ' | '.join(context[:2])
             parts.append(f"参考：{context_text[:200]}")
         
-        parts.append("返回JSON数组，每个元素包含id/question/answer/level/technology")
+        parts.append(f"返回JSON数组，每个JSON数组，每个元素包含id/question/answer/level/technology， 生成数组数量和{count}一致，如果{user_input}优先生成{user_input}相关的面试题")
         
         return '\n'.join(parts)
     
@@ -170,5 +170,30 @@ class LLMService:
             {"id": 8, "question": "Context管理方法？", "answer": "设置窗口大小、保留重要信息、使用摘要压缩、实现层次化管理。", "level": "高级", "technology": "Context"}
         ]
         return [q for q in questions if q["level"] in levels and q["technology"] in technologies]
+
+    def generate_questions_from_prompt(self, prompt: str, count: int = 10) -> List[Dict]:
+        start_time = time.time()
+        
+        print(f"[LLM] Generating {count} questions from custom prompt...")
+        
+        llm = self._get_llm()
+        if not llm:
+            print("LLM not initialized, returning empty list")
+            return []
+        
+        try:
+            response = llm.invoke(prompt)
+            result_text = response.content
+            elapsed = time.time() - start_time
+            print(f"[LLM] Response time: {elapsed:.2f}s")
+            
+            questions = self._parse_response(result_text)
+            if questions:
+                return questions[:count]
+            
+            return []
+        except Exception as e:
+            print(f"Error calling LLM: {e}")
+            return []
 
 llm_service = LLMService()

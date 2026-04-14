@@ -37,7 +37,7 @@
     <div class="cards-section">
       <p class="section-title">请选择面试类型</p>
       <el-row :gutter="20">
-        <el-col :xs="24" :sm="12">
+        <el-col :xs="24" :sm="8">
           <el-card class="type-card frontend-card" @click="navigateTo('/frontend')">
             <div class="card-glow"></div>
             <div class="card-icon-wrapper">
@@ -58,7 +58,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :xs="24" :sm="12">
+        <el-col :xs="24" :sm="8">
           <el-card class="type-card ai-card" @click="navigateTo('/ai-agent')">
             <div class="card-glow"></div>
             <div class="card-icon-wrapper">
@@ -79,6 +79,29 @@
               <span class="tag">LangChain</span>
               <span class="tag">RAG</span>
               <span class="tag">MCP</span>
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :xs="24" :sm="8">
+          <el-card class="type-card resume-card" @click="navigateTo('/custom')">
+            <div class="card-glow"></div>
+            <div class="card-icon-wrapper">
+              <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 13H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 9H9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            <h3>简历定制面试题</h3>
+            <p class="card-desc">上传简历，AI 智能生成针对性面试题</p>
+            <div class="card-tags">
+              <span class="tag">PDF解析</span>
+              <span class="tag">智能生成</span>
+              <span class="tag">个性化</span>
             </div>
           </el-card>
         </el-col>
@@ -366,7 +389,7 @@ const navigateTo = (path: string) => {
 /* Cards Section */
 .cards-section {
   padding: 40px 20px;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -400,6 +423,7 @@ const navigateTo = (path: string) => {
 
 .type-card:nth-child(1) { animation-delay: 0.7s; }
 .type-card:nth-child(2) { animation-delay: 0.85s; }
+.type-card:nth-child(3) { animation-delay: 1s; }
 
 @keyframes cardSlideUp {
   to {
@@ -419,7 +443,6 @@ const navigateTo = (path: string) => {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #409EFF, #67c23a);
   transform: scaleX(0);
   transition: transform 0.4s ease;
 }
@@ -436,6 +459,10 @@ const navigateTo = (path: string) => {
   background: linear-gradient(90deg, #764ba2, #667eea);
 }
 
+.resume-card .card-glow {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
 .card-icon-wrapper {
   padding: 30px 0 20px;
   display: flex;
@@ -450,16 +477,19 @@ const navigateTo = (path: string) => {
   align-items: center;
   justify-content: center;
   transition: all 0.4s ease;
+  color: white;
 }
 
 .frontend-card .card-icon {
-  background: linear-gradient(135deg, #409EFF 0%, #66b1ff 100%);
-  color: white;
+  background: linear-gradient(135deg, #409EFF, #66b1ff);
 }
 
 .ai-card .card-icon {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  color: white;
+  background: linear-gradient(135deg, #764ba2, #667eea);
+}
+
+.resume-card .card-icon {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
 .card-icon svg {
@@ -485,6 +515,7 @@ const navigateTo = (path: string) => {
   color: #909399;
   text-align: center;
   padding: 0 20px;
+  min-height: 40px;
 }
 
 .card-tags {

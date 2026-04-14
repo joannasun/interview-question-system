@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const backendUrl = isProduction 
-  ? 'https://interview-backend.onrender.com' 
+  ? 'https://interview-question-system.onrender.com'
   : 'http://localhost:8000'
 
 export default defineConfig({
